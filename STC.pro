@@ -32,10 +32,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     db/sqlitedatabase.cpp \
-    db/dbaccessor.cpp
+    db/dbaccessor.cpp \
+    sqltableform.cpp \
+    db/sqltablemodel.cpp \
+    dbrowdata.cpp
 
 HEADERS  += mainwindow.h \
     db/sqlitedatabase.h \
-    db/dbaccessor.h
+    db/dbaccessor.h \
+    sqltableform.h \
+    db/sqltablemodel.h \
+    dbrowdata.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    sqltableform.ui

@@ -1,9 +1,9 @@
 #include "dbaccessor.h"
 
-DBAccessor::DBAccessor(QSqlDatabase* db)
+DBAccessor::DBAccessor(QSqlDatabase db)
 {
   db_ = db;
-  query_ = new QSqlQuery(*db);
+  query_ = new QSqlQuery(db);
 }
 
 DBAccessor::~DBAccessor()
@@ -20,7 +20,7 @@ void DBAccessor::executeQuery(const QString& query_string)
     err_msg.append(query_->lastError().text());
     qDebug() << err_msg.toStdString().c_str();
   }
-  if (!db_->open()) {
+  if (!db_.open()) {
     QString err_msg {
       "DBAccessor(): executeQuery(): "
       + query_string
@@ -30,6 +30,24 @@ void DBAccessor::executeQuery(const QString& query_string)
   }
 }
 
+bool DBAccessor::canReadNextResultRow()
+{
+  if (!query_->isActive()) {
+    qDebug() << QString(
+                  "MySQLSyncConnector(): canReadNextResultRow(): Query: "
+                  + query_->executedQuery()
+                  + " Query is not active"
+                  ).toStdString().c_str();
+    return false;
+  }
+  return query_->next();
+}
+
+QString DBAccessor::resultAsString(int index)
+{
+  return query_->value(index).toString();
+}
+
 void DBAccessor::clearQueryResult()
 {
   query_->finish();
@@ -37,24 +55,31 @@ void DBAccessor::clearQueryResult()
 }
 
 
-//CatchList AllVehiclesProcessor::requestForLicnumInOneZoneFromSpecificDeviceCatchList(
-//  const QString& zone_id,
-//  const QString& licnum,
-//  const QString& device_serial,
-//  int offset,
-//  int limit
-//)
-//{
-//  executeQuery(
-//    call("AllVehicles_LicnumInOneZoneFromSpecificDeviceCatchList") +
-//    "(" +
-//      queryString(zone_id)        + ", " +
-//      queryString(licnum)         + ", " +
-//      queryString(device_serial)  + ", " +
-//      queryString(limit)          + ", " +
-//      queryString(offset)         +
-//    ")"
-//  );
+QString DBAccessor::requestForStatement(
+  const QString& id
+)
+{
+  query_->setForwardOnly(true);
+  executeQuery("SELECT (id) FROM testtbkl");
+//  if ( query_->last( ) ) {
+//      do {
+//          qDebug() << query_->value(0).toString();
+//      } while (query_->previous());
+//  }
+  while (canReadNextResultRow()) {
+      QSqlRecord record = query_->record();
+      for(int i=0; i < record.count(); i++)
+      {
+          qDebug() << record.value(i).toString();
+      }
+//    qDebug() << resultAsString(0);
+  }
+  return "test";
+}
 
-//  return buildCatchList(limit);
-//}
+void DBAccessor::addNewStatement(
+  const QString& id
+)
+{
+  executeQuery("INSERT INTO testtbkl (first_name,second_name) VALUES( 'test', 'tese' )");
+}
