@@ -15,6 +15,7 @@ public:
   ~DBAccessor();
   void addNewStatement(const QString &id);
   QString requestForStatement(const QString &id);
+  QString randString(int len);
 private:
   QSqlDatabase db_ ;
   QSqlQuery* query_ = Q_NULLPTR;

@@ -59,27 +59,27 @@ QString DBAccessor::requestForStatement(
   const QString& id
 )
 {
-  query_->setForwardOnly(true);
-  executeQuery("SELECT (id) FROM testtbkl");
-//  if ( query_->last( ) ) {
-//      do {
-//          qDebug() << query_->value(0).toString();
-//      } while (query_->previous());
-//  }
+  executeQuery("SELECT * FROM testtbkl");
   while (canReadNextResultRow()) {
-      QSqlRecord record = query_->record();
-      for(int i=0; i < record.count(); i++)
-      {
-          qDebug() << record.value(i).toString();
-      }
-//    qDebug() << resultAsString(0);
+    qDebug() << resultAsString(0) << resultAsString(1);
   }
   return "test";
 }
+
+QString DBAccessor::randString(int len)
+{
+    QString str;
+    str.resize(len);
+    for (int s = 0; s < len ; ++s)
+        str[s] = QChar('A' + char(qrand() % ('Z' - 'A')));
+
+    return str;
+}
+
 
 void DBAccessor::addNewStatement(
   const QString& id
 )
 {
-  executeQuery("INSERT INTO testtbkl (first_name,second_name) VALUES( 'test', 'tese' )");
+  executeQuery(QString("INSERT INTO testtbkl (first_name,second_name) VALUES( '%1', '%2' )").arg(randString(2), randString(4)));
 }
