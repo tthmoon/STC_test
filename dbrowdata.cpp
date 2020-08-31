@@ -2,7 +2,12 @@
 
 DbRowData::DbRowData(){}
 
+DbRowData::DbRowData(const int id):
+  id_{id}
+{}
+
 DbRowData::DbRowData(
+  const int id,
   const QString& texteditor,
   const QString& fileformats,
   const QString& encoding,
@@ -10,6 +15,7 @@ DbRowData::DbRowData(
   const QString& hasplugins,
   const QString& cancompile
 ):
+  id_{id},
   texteditor_{texteditor},
   fileformats_{fileformats},
   encoding_{encoding},

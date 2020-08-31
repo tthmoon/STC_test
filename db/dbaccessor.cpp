@@ -19,15 +19,17 @@ void DBAccessor::executeQuery(const QString& query_string)
     err_msg.append(" DataBase query error: ");
     err_msg.append(query_->lastError().text());
     qDebug() << err_msg.toStdString().c_str();
+    return;
   }
-  if (!db_.open()) {
-    QString err_msg {
-      "DBAccessor(): executeQuery(): "
-      + query_string
-      + " Connection was closed from the Database"
-    };
-    qDebug() << err_msg.toStdString().c_str();
-  }
+//  if (!db_.open()) {
+//    QString err_msg {
+//      "DBAccessor(): executeQuery(): "
+//      + query_string
+//      + " Connection was closed from the Database"
+//    };
+//    qDebug() << err_msg.toStdString().c_str();
+//    return;
+//  }
 }
 
 bool DBAccessor::canReadNextResultRow()
@@ -55,15 +57,23 @@ void DBAccessor::clearQueryResult()
 }
 
 
-QString DBAccessor::requestForStatement(
-  const QString& id
+rows_list DBAccessor::requestForAll(
 )
 {
   executeQuery("SELECT * FROM testtbkl");
+  rows_list data_set;
   while (canReadNextResultRow()) {
-    qDebug() << resultAsString(0) << resultAsString(1);
+    data_set.append(DbRowData(
+                      resultAsString(0).toInt(),
+                      resultAsString(1),
+                      resultAsString(2),
+                      resultAsString(3),
+                      resultAsString(4),
+                      resultAsString(5),
+                      resultAsString(6)
+                      ));
   }
-  return "test";
+  return data_set;
 }
 
 QString DBAccessor::randString(int len)
@@ -76,10 +86,37 @@ QString DBAccessor::randString(int len)
     return str;
 }
 
-
-void DBAccessor::addNewStatement(
-  const QString& id
-)
+void DBAccessor::removeByID(int id)
 {
-  executeQuery(QString("INSERT INTO testtbkl (first_name,second_name) VALUES( '%1', '%2' )").arg(randString(2), randString(4)));
+  executeQuery(QString("DELETE FROM testtbkl WHERE id='%1'").arg(QString::number(id)));
+}
+
+void DBAccessor::updateRow(const DbRowData* data)
+{
+  executeQuery(QString("UPDATE testtbkl "
+                       "SET texteditor = '%1', fileformats = '%2', encoding = '%3', hasintellisense = '%4', hasplugins = '%5', cancompile = '%6' "
+                       "WHERE id =%7 ").arg(
+                 data->texteditor_,
+                 data->fileformats_,
+                 data->encoding_,
+                 data->hasintellisense_,
+                 data->hasplugins_,
+                 data->cancompile_,
+                 QString::number(data->id_)
+                 )
+               );
+}
+
+int DBAccessor::addNewStatement()
+{
+  executeQuery(QString("INSERT INTO testtbkl "
+                       "(texteditor, fileformats, encoding, hasintellisense, hasplugins, cancompile) "
+                       "VALUES( ' ',  ' ', ' ', ' ', ' ', ' ' )"
+                       )
+               );
+  executeQuery(QString("SELECT last_insert_rowid()"));
+  int id = -1;
+  if (canReadNextResultRow())
+    id = resultAsString(0).toInt();
+  return id;
 }

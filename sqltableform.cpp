@@ -1,16 +1,19 @@
 #include "sqltableform.h"
 #include "ui_sqltableform.h"
 
-SqlTableForm::SqlTableForm(DBAccessor* db) :
-  db_{db},
+SqlTableForm::SqlTableForm() :
   ui(new Ui::SqlTableForm)
 {
   ui->setupUi(this);
+
 }
 
 void SqlTableForm::setModel(QAbstractTableModel* model)
 {
   ui->tbl_sql_content->setModel(model);
+  ui->tbl_sql_content->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+//  ui->tbl_sql_content->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
 }
 
 SqlTableForm::~SqlTableForm()
@@ -24,7 +27,6 @@ void SqlTableForm::on_pb_add_new_clicked()
         ui->tbl_sql_content->model()->rowCount(QModelIndex()),
         QModelIndex()
         );
-  db_->addNewStatement("");
 }
 
 void SqlTableForm::on_pb_clear_clicked()
@@ -34,5 +36,4 @@ void SqlTableForm::on_pb_clear_clicked()
         ui->tbl_sql_content->model()->rowCount(QModelIndex()),
         QModelIndex()
         );
-  db_->requestForStatement("");
 }

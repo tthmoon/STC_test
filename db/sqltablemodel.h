@@ -4,6 +4,7 @@
 #include <QAbstractTableModel>
 
 #include "dbrowdata.h"
+#include "dbaccessor.h"
 
 using rows_list = QList<DbRowData>;
 
@@ -13,7 +14,7 @@ class SqlTableModel : public QAbstractTableModel
   Q_OBJECT
 
 public:
-  explicit SqlTableModel(QObject *parent = 0);
+  SqlTableModel( DBAccessor* db);
 
   // Header:
   enum HEADER_DATA{
@@ -37,8 +38,10 @@ public:
   bool removeRows(int position, int rows, const QModelIndex &index);
   bool setData(const QModelIndex &index, const QVariant &value, int role);
   rows_list getList();
+  Qt::ItemFlags flags(const QModelIndex &index) const;
 private:
   rows_list data_list;
+  DBAccessor* db_ = Q_NULLPTR;
 };
 
 #endif // SQLTABLEMODEL_H

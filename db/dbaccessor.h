@@ -7,15 +7,21 @@
 #include <QSqlRecord>
 
 #include "sqlitedatabase.h"
+#include "../dbrowdata.h"
+//#include "sqltablemodel.h"
+using rows_list = QList<DbRowData>;
 
 class DBAccessor
 {
 public:
   DBAccessor(QSqlDatabase db);
   ~DBAccessor();
-  void addNewStatement(const QString &id);
+  int addNewStatement();
   QString requestForStatement(const QString &id);
   QString randString(int len);
+  void removeByID(int id);
+  void updateRow(const DbRowData* data);
+  rows_list requestForAll();
 private:
   QSqlDatabase db_ ;
   QSqlQuery* query_ = Q_NULLPTR;

@@ -7,7 +7,9 @@ class DbRowData
 {
 public:
   DbRowData();
-  DbRowData(const QString &texteditor, const QString &fileformats, const QString &encoding, const QString &hasintellisense, const QString &hasplugins, const QString &cancompile);
+  DbRowData(const int id);
+  DbRowData(const int id, const QString &texteditor, const QString &fileformats, const QString &encoding, const QString &hasintellisense, const QString &hasplugins, const QString &cancompile);
+  int id_;
   QString texteditor_ = "";
   QString fileformats_ = "";
   QString encoding_ = "";

@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "db/dbaccessor.h"
 #include <QAbstractTableModel>
+#include <QtWidgets>
 
 namespace Ui {
   class SqlTableForm;
@@ -14,7 +15,7 @@ class SqlTableForm : public QWidget
   Q_OBJECT
 
 public:
-  explicit SqlTableForm( DBAccessor* db = 0);
+  explicit SqlTableForm();
   ~SqlTableForm();
 
   void setModel(QAbstractTableModel *model);
@@ -24,7 +25,6 @@ private slots:
   void on_pb_clear_clicked();
 
 private:
-  DBAccessor* db_ = Q_NULLPTR;
   Ui::SqlTableForm *ui;
 };
 

@@ -1,8 +1,9 @@
 #include "sqltablemodel.h"
 
-SqlTableModel::SqlTableModel(QObject *parent)
-  : QAbstractTableModel(parent)
+SqlTableModel::SqlTableModel(DBAccessor* db)
+  : db_{db}
 {
+  data_list = db_->requestForAll();
 }
 
 QVariant SqlTableModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -34,16 +35,14 @@ QVariant SqlTableModel::headerData(int section, Qt::Orientation orientation, int
 
 int SqlTableModel::rowCount(const QModelIndex &parent) const
 {
-  if (parent.isValid())
-    return 0;
+  Q_UNUSED(parent);
 
   return data_list.size();
 }
 
 int SqlTableModel::columnCount(const QModelIndex &parent) const
 {
-  if (parent.isValid())
-    return 0;
+  Q_UNUSED(parent);
 
   return HEADER_DATA::Count;
 }
@@ -85,7 +84,8 @@ bool SqlTableModel::insertRows(int position, int rows, const QModelIndex &index)
   beginInsertRows(QModelIndex(), position, position+rows-1);
 
   for (int row=0; row < rows; row++) {
-    data_list.insert(position, DbRowData());
+    int id = db_->addNewStatement();
+    data_list.append(DbRowData(id));
   }
 
   endInsertRows();
@@ -98,6 +98,7 @@ bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
   beginRemoveRows(QModelIndex(), position, position+rows-1);
 
   for (int row=0; row < rows; ++row) {
+    db_->removeByID( data_list.at(position).id_ );
     data_list.removeAt(position);
   }
 
@@ -107,16 +108,12 @@ bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
 
 bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-
   if (index.row() >= rowCount(index) || index.row() < 0)
     return false;
-
   if (index.column() >= columnCount(index) || index.column() < 0)
     return false;
-
   if (index.isValid() && role == Qt::EditRole) {
     int row = index.row();
-
     DbRowData rowdata = data_list.value(row);
 
     switch (index.column()) {
@@ -142,7 +139,8 @@ bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int
         return false;
     }
     data_list.replace(row, rowdata);
-           emit(dataChanged(index, index));
+    db_->updateRow(&data_list.at(row));
+    emit(dataChanged(index, index));
 
     return true;
   }
@@ -152,4 +150,12 @@ bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int
 rows_list SqlTableModel::getList()
 {
     return data_list;
+}
+
+Qt::ItemFlags SqlTableModel::flags(const QModelIndex &index)const
+{
+    if(index.isValid())
+            return QAbstractTableModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+    return Qt::NoItemFlags;
 }
