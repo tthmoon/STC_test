@@ -2,6 +2,7 @@
 #define SQLTABLEMODEL_H
 
 #include <QAbstractTableModel>
+#include <QThread>
 
 #include "dbrowdata.h"
 #include "dbaccessor.h"
@@ -14,7 +15,7 @@ class SqlTableModel : public QAbstractTableModel
   Q_OBJECT
 
 public:
-  SqlTableModel( DBAccessor* db);
+  SqlTableModel();
 
   // Header:
   enum HEADER_DATA{
@@ -39,6 +40,10 @@ public:
   bool setData(const QModelIndex &index, const QVariant &value, int role);
   rows_list getList();
   Qt::ItemFlags flags(const QModelIndex &index) const;
+public slots:
+  void appendNewRow(int id);
+  void slotSetData(rows_list dl);
+  void slotRemoveById(int id);
 private:
   rows_list data_list;
   DBAccessor* db_ = Q_NULLPTR;

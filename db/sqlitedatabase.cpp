@@ -57,7 +57,7 @@ void SQLiteDataBase::connect()
 
   QString db_file_path(dir.path() + QDir::separator() + file_name_);
   QSqlDatabase db = QSqlDatabase::addDatabase(CLASS_ID, connection_name_);
-  qDebug() << db_file_path;
+//  qDebug() << db_file_path;
   db.setDatabaseName(db_file_path);
   if (!db.open()) {
     QString err_msg;

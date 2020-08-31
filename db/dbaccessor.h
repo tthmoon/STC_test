@@ -5,26 +5,44 @@
 #include <QDebug>
 #include <QSqlError>
 #include <QSqlRecord>
+#include <QDir>
+#include <QThread>
 
 #include "sqlitedatabase.h"
 #include "../dbrowdata.h"
 //#include "sqltablemodel.h"
 using rows_list = QList<DbRowData>;
 
-class DBAccessor
+class DBAccessor : public QObject
 {
+  Q_OBJECT
+
+signals:
+  void signal_addNewStatement(int);
+  void signal_removeByID(int);
+  void signal_updateRow();
+
 public:
-  DBAccessor(QSqlDatabase db);
+
+  DBAccessor();
   ~DBAccessor();
-  int addNewStatement();
-  QString requestForStatement(const QString &id);
+//  int addNewStatement();
   QString randString(int len);
-  void removeByID(int id);
-  void updateRow(const DbRowData* data);
+//  void removeByID(int id);
+//  void updateRow(const DbRowData* data);
   rows_list requestForAll();
+
+  void prepareRowId(int id);
+public slots:
+  void addNewStatement();
+  void updateRow(const DbRowData* data);
+  void removeByID();
 private:
+//  rows_list& data_list_ ;
   QSqlDatabase db_ ;
+  SQLiteDataBase* sql_;
   QSqlQuery* query_ = Q_NULLPTR;
+  int id_;
   void clearQueryResult();
   void executeQuery(const QString &query_string);
   bool canReadNextResultRow();

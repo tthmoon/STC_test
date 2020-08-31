@@ -9,10 +9,12 @@
 #include "db/dbaccessor.h"
 #include "db/sqltablemodel.h"
 
-
+using rows_list = QList<DbRowData>;
+Q_DECLARE_METATYPE(rows_list)
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
+  qRegisterMetaType<rows_list>();
   SQLiteDataBase* sql = new SQLiteDataBase(QDir::currentPath(), QString("test.sql"), QString("tester"));
   sql->connect();
   sql->createTable(QString("testtbkl"),
@@ -26,9 +28,9 @@ int main(int argc, char *argv[])
                            )
                    );
 //  MainWindow w;
-  DBAccessor* db = new DBAccessor(sql->getDataBase());
+//  DBAccessor* db = new DBAccessor(sql->getDataBase());
   SqlTableForm* sqlTable = new SqlTableForm();
-  SqlTableModel* myModel = new SqlTableModel(db);
+  SqlTableModel* myModel = new SqlTableModel();
   sqlTable->setModel(myModel);
   sqlTable->show();
 //  w.show();

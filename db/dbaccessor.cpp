@@ -1,14 +1,20 @@
 #include "dbaccessor.h"
 
-DBAccessor::DBAccessor(QSqlDatabase db)
+DBAccessor::DBAccessor()
 {
-  db_ = db;
-  query_ = new QSqlQuery(db);
+  sql_ = new SQLiteDataBase(QDir::currentPath(), QString("test.sql"), randString(16));
+  sql_->connect();
+  query_ = new QSqlQuery(sql_->getDataBase());
 }
 
 DBAccessor::~DBAccessor()
 {
   delete query_;
+}
+
+void DBAccessor::prepareRowId(int id){
+//  qDebug() << QString::number(id_);
+  id_ = id;
 }
 
 void DBAccessor::executeQuery(const QString& query_string)
@@ -21,15 +27,6 @@ void DBAccessor::executeQuery(const QString& query_string)
     qDebug() << err_msg.toStdString().c_str();
     return;
   }
-//  if (!db_.open()) {
-//    QString err_msg {
-//      "DBAccessor(): executeQuery(): "
-//      + query_string
-//      + " Connection was closed from the Database"
-//    };
-//    qDebug() << err_msg.toStdString().c_str();
-//    return;
-//  }
 }
 
 bool DBAccessor::canReadNextResultRow()
@@ -86,9 +83,10 @@ QString DBAccessor::randString(int len)
     return str;
 }
 
-void DBAccessor::removeByID(int id)
+void DBAccessor::removeByID()
 {
-  executeQuery(QString("DELETE FROM testtbkl WHERE id='%1'").arg(QString::number(id)));
+  executeQuery(QString("DELETE FROM testtbkl WHERE id='%1'").arg(QString::number(id_)));
+  emit signal_removeByID(id_);
 }
 
 void DBAccessor::updateRow(const DbRowData* data)
@@ -105,9 +103,10 @@ void DBAccessor::updateRow(const DbRowData* data)
                  QString::number(data->id_)
                  )
                );
+  emit signal_updateRow();
 }
 
-int DBAccessor::addNewStatement()
+void DBAccessor::addNewStatement()
 {
   executeQuery(QString("INSERT INTO testtbkl "
                        "(texteditor, fileformats, encoding, hasintellisense, hasplugins, cancompile) "
@@ -116,7 +115,9 @@ int DBAccessor::addNewStatement()
                );
   executeQuery(QString("SELECT last_insert_rowid()"));
   int id = -1;
+//  QThread::sleep(3);
+  qDebug() <<"aaaa";
   if (canReadNextResultRow())
     id = resultAsString(0).toInt();
-  return id;
+  emit signal_addNewStatement(id);
 }

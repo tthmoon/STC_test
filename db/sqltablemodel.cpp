@@ -1,9 +1,16 @@
 #include "sqltablemodel.h"
 
-SqlTableModel::SqlTableModel(DBAccessor* db)
-  : db_{db}
+SqlTableModel::SqlTableModel()
 {
-  data_list = db_->requestForAll();
+  DBAccessor* db = new DBAccessor();
+  data_list = db->requestForAll();
+  db->deleteLater();
+}
+
+void SqlTableModel::slotSetData(rows_list dl){
+
+  data_list = dl;
+
 }
 
 QVariant SqlTableModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -84,26 +91,63 @@ bool SqlTableModel::insertRows(int position, int rows, const QModelIndex &index)
   beginInsertRows(QModelIndex(), position, position+rows-1);
 
   for (int row=0; row < rows; row++) {
-    int id = db_->addNewStatement();
-    data_list.append(DbRowData(id));
+    QThread* thread = new QThread();
+    DBAccessor* db = new DBAccessor();
+    db->moveToThread(thread);
+    connect(thread, SIGNAL(started()),                    db,         SLOT(addNewStatement()));
+    connect(db,     SIGNAL(signal_addNewStatement(int)),  this,       SLOT(appendNewRow(int)), Qt::ConnectionType::QueuedConnection);
+    connect(db,     SIGNAL(signal_addNewStatement(int)),  db,         SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
+    connect(db,     SIGNAL(signal_addNewStatement(int)),  thread,     SLOT(quit()), Qt::ConnectionType::QueuedConnection);
+    connect(thread, SIGNAL(finished()),                   thread,     SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
+    thread->start();
   }
 
   endInsertRows();
   return true;
 }
 
+void SqlTableModel::appendNewRow(int id){
+  qDebug() <<"id =" <<QString::number(id);
+  data_list.append(DbRowData(id));
+}
+
 bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
 {
   Q_UNUSED(index);
+
+  qDebug() <<position;
   beginRemoveRows(QModelIndex(), position, position+rows-1);
 
-  for (int row=0; row < rows; ++row) {
-    db_->removeByID( data_list.at(position).id_ );
-    data_list.removeAt(position);
+  for (int row=position; row < position+rows; ++row) {
+
+    QThread* thread = new QThread();
+    DBAccessor* db = new DBAccessor();
+    qDebug() << data_list.at(row).id_;
+    db->prepareRowId(data_list.at(row).id_);
+    db->moveToThread(thread);
+    connect(thread, SIGNAL(started()),                    db,         SLOT(removeByID()));
+    connect(db,     SIGNAL(signal_removeByID(int)),       this,       SLOT(slotRemoveById(int)), Qt::ConnectionType::QueuedConnection);
+    connect(db,     SIGNAL(signal_removeByID(int)),       db,         SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
+    connect(db,     SIGNAL(signal_removeByID(int)),       thread,     SLOT(quit()), Qt::ConnectionType::QueuedConnection);
+    connect(thread, SIGNAL(finished()),                   thread,     SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
+    thread->start();
+
+//    db_->removeByID( data_list.at(position).id_ );
+//    data_list.removeAt(position);
   }
 
   endRemoveRows();
   return true;
+}
+
+void SqlTableModel::slotRemoveById(int id){
+//  qDebug() << "ree";
+  for (int i; i<data_list.size() ;i++){
+    if (data_list[i].id_ == id){
+      data_list.removeAt(i);
+      return;
+    }
+  }
 }
 
 bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
