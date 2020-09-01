@@ -43,7 +43,6 @@ void ImportForm::startImporting(){
 
 ImportForm::~ImportForm()
 {
-  qDebug() << "delete";
   import_thread_->quit();
   delete ui;
 }

@@ -6,19 +6,23 @@ SqlTableForm::SqlTableForm() :
 {
   ui->setupUi(this);
 
+  ui->tbl_sql_content->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+  ui->tbl_sql_content->setContextMenuPolicy(Qt::CustomContextMenu);
+
+  connect(ui->tbl_sql_content, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotCustomMenuRequested(QPoint)));
+
 }
 
 void SqlTableForm::setModel(QAbstractTableModel* model)
 {
   ui->tbl_sql_content->setModel(model);
-  ui->tbl_sql_content->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-//  ui->tbl_sql_content->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
 }
 
 SqlTableForm::~SqlTableForm()
 {
   delete ui;
+  delete import_form_;
 }
 
 void SqlTableForm::on_pb_add_new_clicked()
@@ -51,3 +55,19 @@ void SqlTableForm::on_pb_import_clicked()
   connect(import_form_, SIGNAL( signalImportFinished()), this, SLOT(slotImportFinished()), Qt::QueuedConnection);
   import_form_->startImporting();
 }
+
+void SqlTableForm::slotRemoveRecord(){
+  int row = ui->tbl_sql_content->selectionModel()->currentIndex().row();
+  ui->tbl_sql_content->model()->removeRow(row);
+}
+
+void SqlTableForm::slotCustomMenuRequested(QPoint pos)
+{
+    QMenu * menu = new QMenu(this);
+    QAction * deleteDevice = new QAction("Delete", this);
+    connect(deleteDevice, SIGNAL(triggered()), this, SLOT(slotRemoveRecord()));
+    menu->addAction(deleteDevice);
+    menu->popup(ui->tbl_sql_content->viewport()->mapToGlobal(pos));
+}
+
+

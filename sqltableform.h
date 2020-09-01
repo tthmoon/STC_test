@@ -23,6 +23,8 @@ public:
   void setModel(QAbstractTableModel *model);
 public slots:
   void slotImportFinished();
+  void slotCustomMenuRequested(QPoint pos);
+  void slotRemoveRecord();
 private slots:
   void on_pb_add_new_clicked();
 

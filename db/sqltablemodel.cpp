@@ -8,9 +8,7 @@ SqlTableModel::SqlTableModel()
 }
 
 void SqlTableModel::slotSetData(rows_list dl){
-
   data_list = dl;
-
 }
 
 QVariant SqlTableModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -107,7 +105,6 @@ bool SqlTableModel::insertRows(int position, int rows, const QModelIndex &index)
 }
 
 void SqlTableModel::appendNewRow(int id){
-  qDebug() <<"id =" <<QString::number(id);
   data_list.append(DbRowData(id));
 }
 
@@ -115,14 +112,10 @@ bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
 {
   Q_UNUSED(index);
 
-  qDebug() <<position;
-  beginRemoveRows(QModelIndex(), position, position+rows-1);
-
   for (int row=position; row < position+rows; ++row) {
 
     QThread* thread = new QThread();
     DBAccessor* db = new DBAccessor();
-    qDebug() << data_list.at(row).id_;
     db->prepareRowId(data_list.at(row).id_);
     db->moveToThread(thread);
     connect(thread, SIGNAL(started()),                    db,         SLOT(removeByID()));
@@ -131,20 +124,16 @@ bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
     connect(db,     SIGNAL(signal_removeByID(int)),       thread,     SLOT(quit()), Qt::ConnectionType::QueuedConnection);
     connect(thread, SIGNAL(finished()),                   thread,     SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
     thread->start();
-
-//    db_->removeByID( data_list.at(position).id_ );
-//    data_list.removeAt(position);
   }
-
-  endRemoveRows();
   return true;
 }
 
 void SqlTableModel::slotRemoveById(int id){
-//  qDebug() << "ree";
   for (int i = 0; i<data_list.size() ;i++){
     if (data_list[i].id_ == id){
+      beginRemoveRows(QModelIndex(), i, i);
       data_list.removeAt(i);
+      endRemoveRows();
       return;
     }
   }
@@ -189,13 +178,11 @@ bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int
     db->prepareRow(&data_list.at(row));
     db->moveToThread(thread);
     connect(thread, SIGNAL(started()),                db,         SLOT(updateRow()));
-//    connect(db,     SIGNAL(signal_updateRow()),       this,       SLOT(slotUpdateRow()), Qt::ConnectionType::QueuedConnection);
     connect(db,     SIGNAL(signal_updateRow()),       db,         SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
     connect(db,     SIGNAL(signal_updateRow()),       thread,     SLOT(quit()), Qt::ConnectionType::QueuedConnection);
     connect(thread, SIGNAL(finished()),               thread,     SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
     thread->start();
 
-//    db_->updateRow(&data_list.at(row));
     emit(dataChanged(index, index));
 
     return true;
