@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     db/sqltablemodel.cpp \
     dbrowdata.cpp \
     importform.cpp \
-    import/importthread.cpp
+    import/importthread.cpp \
+    xml/xmlreader.cpp
 
 HEADERS  += mainwindow.h \
     db/sqlitedatabase.h \
@@ -48,7 +49,8 @@ HEADERS  += mainwindow.h \
     BUILD/ui_mainwindow.h \
     BUILD/ui_sqltableform.h \
     importform.h \
-    import/importthread.h
+    import/importthread.h \
+    xml/xmlreader.h
 
 FORMS    += mainwindow.ui \
     sqltableform.ui \
