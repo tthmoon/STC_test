@@ -37,3 +37,17 @@ void SqlTableForm::on_pb_clear_clicked()
         QModelIndex()
         );
 }
+
+void SqlTableForm::slotImportFinished()
+{
+  ui->pb_import->setEnabled(true);
+  delete import_form_;
+}
+
+void SqlTableForm::on_pb_import_clicked()
+{
+  ui->pb_import->setEnabled(false);
+  import_form_ = new ImportForm();
+  connect(import_form_, SIGNAL( signalImportFinished()), this, SLOT(slotImportFinished()), Qt::QueuedConnection);
+  import_form_->startImporting();
+}

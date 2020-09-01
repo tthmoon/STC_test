@@ -142,7 +142,7 @@ bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
 
 void SqlTableModel::slotRemoveById(int id){
 //  qDebug() << "ree";
-  for (int i; i<data_list.size() ;i++){
+  for (int i = 0; i<data_list.size() ;i++){
     if (data_list[i].id_ == id){
       data_list.removeAt(i);
       return;
@@ -183,13 +183,27 @@ bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int
         return false;
     }
     data_list.replace(row, rowdata);
-    db_->updateRow(&data_list.at(row));
+
+    QThread* thread = new QThread();
+    DBAccessor* db = new DBAccessor();
+    db->prepareRow(&data_list.at(row));
+    db->moveToThread(thread);
+    connect(thread, SIGNAL(started()),                db,         SLOT(updateRow()));
+//    connect(db,     SIGNAL(signal_updateRow()),       this,       SLOT(slotUpdateRow()), Qt::ConnectionType::QueuedConnection);
+    connect(db,     SIGNAL(signal_updateRow()),       db,         SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
+    connect(db,     SIGNAL(signal_updateRow()),       thread,     SLOT(quit()), Qt::ConnectionType::QueuedConnection);
+    connect(thread, SIGNAL(finished()),               thread,     SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
+    thread->start();
+
+//    db_->updateRow(&data_list.at(row));
     emit(dataChanged(index, index));
 
     return true;
   }
   return false;
 }
+
+
 
 rows_list SqlTableModel::getList()
 {

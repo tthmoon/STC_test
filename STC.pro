@@ -35,14 +35,21 @@ SOURCES += main.cpp\
     db/dbaccessor.cpp \
     sqltableform.cpp \
     db/sqltablemodel.cpp \
-    dbrowdata.cpp
+    dbrowdata.cpp \
+    importform.cpp \
+    import/importthread.cpp
 
 HEADERS  += mainwindow.h \
     db/sqlitedatabase.h \
     db/dbaccessor.h \
     sqltableform.h \
     db/sqltablemodel.h \
-    dbrowdata.h
+    dbrowdata.h \
+    BUILD/ui_mainwindow.h \
+    BUILD/ui_sqltableform.h \
+    importform.h \
+    import/importthread.h
 
 FORMS    += mainwindow.ui \
-    sqltableform.ui
+    sqltableform.ui \
+    importform.ui

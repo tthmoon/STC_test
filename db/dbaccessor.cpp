@@ -17,6 +17,10 @@ void DBAccessor::prepareRowId(int id){
   id_ = id;
 }
 
+void DBAccessor::prepareRow(const DbRowData* row){
+  row_ = row;
+}
+
 void DBAccessor::executeQuery(const QString& query_string)
 {
   clearQueryResult();
@@ -89,18 +93,18 @@ void DBAccessor::removeByID()
   emit signal_removeByID(id_);
 }
 
-void DBAccessor::updateRow(const DbRowData* data)
+void DBAccessor::updateRow()
 {
   executeQuery(QString("UPDATE testtbkl "
                        "SET texteditor = '%1', fileformats = '%2', encoding = '%3', hasintellisense = '%4', hasplugins = '%5', cancompile = '%6' "
                        "WHERE id =%7 ").arg(
-                 data->texteditor_,
-                 data->fileformats_,
-                 data->encoding_,
-                 data->hasintellisense_,
-                 data->hasplugins_,
-                 data->cancompile_,
-                 QString::number(data->id_)
+                 row_->texteditor_,
+                 row_->fileformats_,
+                 row_->encoding_,
+                 row_->hasintellisense_,
+                 row_->hasplugins_,
+                 row_->cancompile_,
+                 QString::number(row_->id_)
                  )
                );
   emit signal_updateRow();
@@ -115,8 +119,6 @@ void DBAccessor::addNewStatement()
                );
   executeQuery(QString("SELECT last_insert_rowid()"));
   int id = -1;
-//  QThread::sleep(3);
-  qDebug() <<"aaaa";
   if (canReadNextResultRow())
     id = resultAsString(0).toInt();
   emit signal_addNewStatement(id);

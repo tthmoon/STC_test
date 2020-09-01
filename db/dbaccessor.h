@@ -33,9 +33,10 @@ public:
   rows_list requestForAll();
 
   void prepareRowId(int id);
+  void prepareRow(const DbRowData* row);
 public slots:
   void addNewStatement();
-  void updateRow(const DbRowData* data);
+  void updateRow();
   void removeByID();
 private:
 //  rows_list& data_list_ ;
@@ -43,6 +44,7 @@ private:
   SQLiteDataBase* sql_;
   QSqlQuery* query_ = Q_NULLPTR;
   int id_;
+  const DbRowData* row_;
   void clearQueryResult();
   void executeQuery(const QString &query_string);
   bool canReadNextResultRow();
