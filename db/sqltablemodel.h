@@ -40,6 +40,8 @@ public:
   bool setData(const QModelIndex &index, const QVariant &value, int role);
   rows_list getList();
   Qt::ItemFlags flags(const QModelIndex &index) const;
+  static SqlTableModel::HEADER_DATA getEnumByString(QString edata);
+  void updateData();
 public slots:
   void appendNewRow(int id);
   void slotSetData(rows_list dl);
@@ -47,6 +49,8 @@ public slots:
 private:
   rows_list data_list;
   DBAccessor* db_ = Q_NULLPTR;
+  int delay_ = 0;
+  int randomBetween(int low, int high);
 };
 
 #endif // SQLTABLEMODEL_H

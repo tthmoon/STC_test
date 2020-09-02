@@ -34,6 +34,7 @@ public:
 
   void prepareRowId(int id);
   void prepareRow(const DbRowData* row);
+  int addNewStatement(DbRowData *data);
 public slots:
   void addNewStatement();
   void updateRow();

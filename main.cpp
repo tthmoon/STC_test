@@ -9,12 +9,17 @@
 #include "db/dbaccessor.h"
 #include "db/sqltablemodel.h"
 
+#include "xml/xmlreader.h"
+
 using rows_list = QList<DbRowData>;
 Q_DECLARE_METATYPE(rows_list)
+//Q_DECLARE_METATYPE(QMap<QString,QString>)
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
   qRegisterMetaType<rows_list>();
+  qRegisterMetaType<QMap<QString,QString>>();
+
   SQLiteDataBase* sql = new SQLiteDataBase(QDir::currentPath(), QString("test.sql"), QString("tester"));
   sql->connect();
   sql->createTable(QString("testtbkl"),
@@ -30,8 +35,6 @@ int main(int argc, char *argv[])
 //  MainWindow w;
 //  DBAccessor* db = new DBAccessor(sql->getDataBase());
   SqlTableForm* sqlTable = new SqlTableForm();
-  SqlTableModel* myModel = new SqlTableModel();
-  sqlTable->setModel(myModel);
   sqlTable->show();
 //  w.show();
 

@@ -4,7 +4,10 @@
 
 #include <QThread>
 #include <QList>
-
+#include <QDir>
+#include "../xml/xmlreader.h"
+#include "../db/dbaccessor.h"
+#include "../db/sqltablemodel.h"
 
 class ImportThread : public QThread
 {
@@ -12,21 +15,20 @@ class ImportThread : public QThread
 
 signals:
   void signalErrorImportDirectoryFail();
-  void signalImportStart(QList<QString> file_names);
-  void signalImportFileError();
+  void signalImportStart(QStringList file_names);
+  void signalImportFileError(QString error);
   void signalImported();
   void signalImportFinished();
 
 public:
   explicit ImportThread();
   virtual ~ImportThread() override;
-  void startProcess(
-  );
   void quit();
 
   void coreStop();
   bool isCoreRunning();
 
+  void startProcess(QString directory);
 protected:
   void run() override;
 

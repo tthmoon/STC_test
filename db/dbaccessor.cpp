@@ -123,3 +123,23 @@ void DBAccessor::addNewStatement()
     id = resultAsString(0).toInt();
   emit signal_addNewStatement(id);
 }
+
+int DBAccessor::addNewStatement(DbRowData* data)
+{
+  executeQuery(QString("INSERT INTO testtbkl "
+                       "(texteditor, fileformats, encoding, hasintellisense, hasplugins, cancompile) "
+                       "VALUES( '%1',  '%2', '%3', '%4', '%5', '%6' )"
+                       ).arg(
+                 data->texteditor_,
+                 data->fileformats_,
+                 data->encoding_,
+                 data->hasintellisense_,
+                 data->hasplugins_,
+                 data->cancompile_
+               ));
+  executeQuery(QString("SELECT last_insert_rowid()"));
+  int id = -1;
+  if (canReadNextResultRow())
+    id = resultAsString(0).toInt();
+  return id;
+}

@@ -5,22 +5,25 @@
 #include "db/dbaccessor.h"
 #include <QAbstractTableModel>
 #include <QtWidgets>
+#include <QFileDialog>
 
 #include "importform.h"
+#include "db/sqltablemodel.h"
 
 namespace Ui {
   class SqlTableForm;
 }
 
-class SqlTableForm : public QWidget
+class SqlTableForm :
+    public QWidget
+
 {
   Q_OBJECT
 
 public:
-  explicit SqlTableForm();
+  SqlTableForm();
   ~SqlTableForm();
-
-  void setModel(QAbstractTableModel *model);
+  void updateModel();
 public slots:
   void slotImportFinished();
   void slotCustomMenuRequested(QPoint pos);

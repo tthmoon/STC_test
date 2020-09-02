@@ -6,12 +6,19 @@
 #include <QString>
 #include <QXmlStreamReader>
 #include <QDebug>
+#include <QMap>
+
 
 class XmlReader
 {
 public:
   XmlReader();
-  void readFile(QString filepath);
+  bool hasError();
+  QMap<QString, QString> readFile(QString filepath);
+  QString getLastError();
+private:
+  bool has_error_ = false;
+  QString last_error = "";
 };
 
 #endif // XMLREADER_H

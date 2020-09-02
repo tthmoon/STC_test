@@ -50,7 +50,8 @@ HEADERS  += mainwindow.h \
     BUILD/ui_sqltableform.h \
     importform.h \
     import/importthread.h \
-    xml/xmlreader.h
+    xml/xmlreader.h \
+    itablecontrol.h
 
 FORMS    += mainwindow.ui \
     sqltableform.ui \

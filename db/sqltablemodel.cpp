@@ -2,10 +2,19 @@
 
 SqlTableModel::SqlTableModel()
 {
+  updateData();
+}
+
+void SqlTableModel::updateData(){
   DBAccessor* db = new DBAccessor();
   data_list = db->requestForAll();
   db->deleteLater();
+  foreach (DbRowData t, data_list) {
+     qDebug() << t.texteditor_;
+    }
+  emit(dataChanged(index(0, 0), index(4, columnCount())));
 }
+
 
 void SqlTableModel::slotSetData(rows_list dl){
   data_list = dl;
@@ -38,10 +47,25 @@ QVariant SqlTableModel::headerData(int section, Qt::Orientation orientation, int
   return QVariant();
 }
 
+SqlTableModel::HEADER_DATA SqlTableModel::getEnumByString(QString edata){
+
+  if (edata == "texteditor")
+    return TEXTEDITOR;
+  if (edata == "fileformats")
+    return FILEFORMAT;
+  if (edata == "encoding")
+    return ENCODING;
+  if (edata == "hasintellisense")
+    return HASINTELLICENCE;
+  if (edata == "hasplugins")
+    return HASPLAGINS;
+  if (edata == "cancompile")
+    return CANCOMPILE;
+}
+
 int SqlTableModel::rowCount(const QModelIndex &parent) const
 {
   Q_UNUSED(parent);
-
   return data_list.size();
 }
 
@@ -54,6 +78,8 @@ int SqlTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant SqlTableModel::data(const QModelIndex &index, int role) const
 {
+
+//  qDebug() << "bbbb";
   if (!index.isValid())
     return QVariant();
 
@@ -62,7 +88,7 @@ QVariant SqlTableModel::data(const QModelIndex &index, int role) const
 
   if (index.column() >= columnCount(index) || index.column() < 0)
     return QVariant();
-
+  qDebug() << "bbbb";
   if (role == Qt::DisplayRole) {
     DbRowData row = data_list.at(index.row());
     switch (index.column()) {
@@ -83,11 +109,12 @@ QVariant SqlTableModel::data(const QModelIndex &index, int role) const
   return QVariant();
 }
 
+
 bool SqlTableModel::insertRows(int position, int rows, const QModelIndex &index)
 {
   Q_UNUSED(index);
-  beginInsertRows(QModelIndex(), position, position+rows-1);
-
+//  beginInsertRows(QModelIndex(), position, position+rows-1);/
+//  endInsertRows();
   for (int row=0; row < rows; row++) {
     QThread* thread = new QThread();
     DBAccessor* db = new DBAccessor();
@@ -98,14 +125,18 @@ bool SqlTableModel::insertRows(int position, int rows, const QModelIndex &index)
     connect(db,     SIGNAL(signal_addNewStatement(int)),  thread,     SLOT(quit()), Qt::ConnectionType::QueuedConnection);
     connect(thread, SIGNAL(finished()),                   thread,     SLOT(deleteLater()), Qt::ConnectionType::QueuedConnection);
     thread->start();
+    delay_--;
+    data_list.append(DbRowData(data_list.size()));
   }
-
-  endInsertRows();
+//   qDebug() << "a";
+//  endInsertRows();
   return true;
 }
 
 void SqlTableModel::appendNewRow(int id){
+  beginInsertRows(QModelIndex(), rowCount(), rowCount());
   data_list.append(DbRowData(id));
+  endInsertRows();
 }
 
 bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
@@ -141,11 +172,14 @@ void SqlTableModel::slotRemoveById(int id){
 
 bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+  qDebug() << value.toString() << index.row() << rowCount(index) <<index.row() ;
   if (index.row() >= rowCount(index) || index.row() < 0)
     return false;
+//  qDebug() << 'value.toString()';
   if (index.column() >= columnCount(index) || index.column() < 0)
     return false;
-  if (index.isValid() && role == Qt::EditRole) {
+//  qDebug() << 'value.toString()';
+  if (role == Qt::EditRole) {
     int row = index.row();
     DbRowData rowdata = data_list.value(row);
 

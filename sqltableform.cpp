@@ -6,6 +6,8 @@ SqlTableForm::SqlTableForm() :
 {
   ui->setupUi(this);
 
+  updateModel();
+
   ui->tbl_sql_content->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
   ui->tbl_sql_content->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -14,9 +16,9 @@ SqlTableForm::SqlTableForm() :
 
 }
 
-void SqlTableForm::setModel(QAbstractTableModel* model)
+void SqlTableForm::updateModel()
 {
-  ui->tbl_sql_content->setModel(model);
+  ui->tbl_sql_content->setModel(new SqlTableModel());
 }
 
 SqlTableForm::~SqlTableForm()
@@ -27,6 +29,7 @@ SqlTableForm::~SqlTableForm()
 
 void SqlTableForm::on_pb_add_new_clicked()
 {
+  update();
   ui->tbl_sql_content->model()->insertRow(
         ui->tbl_sql_content->model()->rowCount(QModelIndex()),
         QModelIndex()
@@ -44,30 +47,43 @@ void SqlTableForm::on_pb_clear_clicked()
 
 void SqlTableForm::slotImportFinished()
 {
+  dynamic_cast<SqlTableModel*>(ui->tbl_sql_content->model())->updateData();
+  update();
+  updateModel();
   ui->pb_import->setEnabled(true);
   delete import_form_;
 }
 
 void SqlTableForm::on_pb_import_clicked()
 {
-  ui->pb_import->setEnabled(false);
-  import_form_ = new ImportForm();
-  connect(import_form_, SIGNAL( signalImportFinished()), this, SLOT(slotImportFinished()), Qt::QueuedConnection);
-  import_form_->startImporting();
+  QString dir = QFileDialog::getExistingDirectory(
+        this,
+        "Choose folder with xml files",
+        QDir::currentPath(),
+        QFileDialog::DontResolveSymlinks);
+
+  QDir pathDir(dir);
+  if ( pathDir.exists() && dir != NULL ){
+    ui->pb_import->setEnabled(false);
+    import_form_ = new ImportForm();
+    connect(import_form_, SIGNAL( signalImportFinished()), this, SLOT(slotImportFinished()), Qt::QueuedConnection);
+    import_form_->startImporting(dir);
+   }
 }
 
 void SqlTableForm::slotRemoveRecord(){
   int row = ui->tbl_sql_content->selectionModel()->currentIndex().row();
-  ui->tbl_sql_content->model()->removeRow(row);
+  if (row > -1)
+    ui->tbl_sql_content->model()->removeRow(row);
 }
 
 void SqlTableForm::slotCustomMenuRequested(QPoint pos)
 {
-    QMenu * menu = new QMenu(this);
-    QAction * deleteDevice = new QAction("Delete", this);
-    connect(deleteDevice, SIGNAL(triggered()), this, SLOT(slotRemoveRecord()));
-    menu->addAction(deleteDevice);
-    menu->popup(ui->tbl_sql_content->viewport()->mapToGlobal(pos));
+  QMenu * menu = new QMenu(this);
+  QAction * deleteDevice = new QAction("Delete", this);
+  connect(deleteDevice, SIGNAL(triggered()), this, SLOT(slotRemoveRecord()));
+  menu->addAction(deleteDevice);
+  menu->popup(ui->tbl_sql_content->viewport()->mapToGlobal(pos));
 }
 
 

@@ -7,27 +7,31 @@
 
 #include "import/importthread.h"
 
+
 namespace Ui {
   class ImportForm;
 }
 
-class ImportForm : public QWidget
+class ImportForm :
+    public QWidget
 {
   Q_OBJECT
 signals:
   void signalImportFinished();
 
 public:
-  explicit ImportForm(QWidget *parent = 0);
+  explicit ImportForm(QWidget *parent=0);
   ~ImportForm();
 
-  void startImporting();
   void closeEvent(QCloseEvent *event);
+  void startImporting(QString dir);
+//  void addNewStatement(QMap<QString, QString>);
+
 public slots:
-  void slotImportStart(QList<QString> file_names);
-  void slotImportFileError();
-  void slotImported();
+  void slotImportStart(QStringList file_names);
+  void slotFileImported();
   void slotImportFinished();
+  void slotImportFileError(QString error);
 private slots:
   void on_pb_exit_clicked();
 
