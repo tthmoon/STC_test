@@ -3,6 +3,8 @@
 XmlReader::XmlReader(){
 }
 
+//Класс для чтение xml
+//!!! Работает только с xml файлами для данного ТЗ
 QMap<QString, QString> XmlReader::readFile(QString filepath){
   has_error_ = false;
 
@@ -64,10 +66,12 @@ QMap<QString, QString> XmlReader::readFile(QString filepath){
   return file_entry;
 }
 
+//Возвращении флага о успешности обработки
 bool XmlReader::hasError(){
   return has_error_;
 }
 
+//Возвращение текста послейдней ошибки
 QString XmlReader::getLastError(){
   return last_error;
 }

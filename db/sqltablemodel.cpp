@@ -5,19 +5,11 @@ SqlTableModel::SqlTableModel()
   updateData();
 }
 
+//Инициализация модели из БД
 void SqlTableModel::updateData(){
   DBAccessor* db = new DBAccessor();
   data_list = db->requestForAll();
   db->deleteLater();
-  foreach (DbRowData t, data_list) {
-     qDebug() << t.texteditor_;
-    }
-  emit(dataChanged(index(0, 0), index(4, columnCount())));
-}
-
-
-void SqlTableModel::slotSetData(rows_list dl){
-  data_list = dl;
 }
 
 QVariant SqlTableModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -47,6 +39,7 @@ QVariant SqlTableModel::headerData(int section, Qt::Orientation orientation, int
   return QVariant();
 }
 
+//Возвращение текстового формата тегов, в соответствии с enum заголовка
 SqlTableModel::HEADER_DATA SqlTableModel::getEnumByString(QString edata){
 
   if (edata == "texteditor")
@@ -61,6 +54,7 @@ SqlTableModel::HEADER_DATA SqlTableModel::getEnumByString(QString edata){
     return HASPLAGINS;
   if (edata == "cancompile")
     return CANCOMPILE;
+  return Count;
 }
 
 int SqlTableModel::rowCount(const QModelIndex &parent) const
@@ -79,7 +73,6 @@ int SqlTableModel::columnCount(const QModelIndex &parent) const
 QVariant SqlTableModel::data(const QModelIndex &index, int role) const
 {
 
-//  qDebug() << "bbbb";
   if (!index.isValid())
     return QVariant();
 
@@ -88,7 +81,6 @@ QVariant SqlTableModel::data(const QModelIndex &index, int role) const
 
   if (index.column() >= columnCount(index) || index.column() < 0)
     return QVariant();
-  qDebug() << "bbbb";
   if (role == Qt::DisplayRole) {
     DbRowData row = data_list.at(index.row());
     switch (index.column()) {
@@ -109,13 +101,13 @@ QVariant SqlTableModel::data(const QModelIndex &index, int role) const
   return QVariant();
 }
 
-
+// Вставка строк. Работает в отдельном потоке. Визуальное добавление происходит только по сигналу о удачном удалении
 bool SqlTableModel::insertRows(int position, int rows, const QModelIndex &index)
 {
   Q_UNUSED(index);
-//  beginInsertRows(QModelIndex(), position, position+rows-1);/
-//  endInsertRows();
+  Q_UNUSED(position);
   for (int row=0; row < rows; row++) {
+//    Вставка строк в отдельном потоке
     QThread* thread = new QThread();
     DBAccessor* db = new DBAccessor();
     db->moveToThread(thread);
@@ -128,23 +120,23 @@ bool SqlTableModel::insertRows(int position, int rows, const QModelIndex &index)
     delay_--;
     data_list.append(DbRowData(data_list.size()));
   }
-//   qDebug() << "a";
-//  endInsertRows();
   return true;
 }
 
+// Слот на получение ИД добавленной строки, обновляет визуально таблицу
 void SqlTableModel::appendNewRow(int id){
   beginInsertRows(QModelIndex(), rowCount(), rowCount());
   data_list.append(DbRowData(id));
   endInsertRows();
 }
 
+// Удаление строк. Работает в отдельном потоке. Визуальное удаление происходит только по сигналу о удачном удалении
 bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
 {
   Q_UNUSED(index);
 
   for (int row=position; row < position+rows; ++row) {
-
+//    Удаление строки в отдельном потоке
     QThread* thread = new QThread();
     DBAccessor* db = new DBAccessor();
     db->prepareRowId(data_list.at(row).id_);
@@ -159,6 +151,7 @@ bool SqlTableModel::removeRows(int position, int rows, const QModelIndex &index)
   return true;
 }
 
+// Слот на получение ИД удаленной строки, обновляет визуально таблицу
 void SqlTableModel::slotRemoveById(int id){
   for (int i = 0; i<data_list.size() ;i++){
     if (data_list[i].id_ == id){
@@ -172,13 +165,10 @@ void SqlTableModel::slotRemoveById(int id){
 
 bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-  qDebug() << value.toString() << index.row() << rowCount(index) <<index.row() ;
   if (index.row() >= rowCount(index) || index.row() < 0)
     return false;
-//  qDebug() << 'value.toString()';
   if (index.column() >= columnCount(index) || index.column() < 0)
     return false;
-//  qDebug() << 'value.toString()';
   if (role == Qt::EditRole) {
     int row = index.row();
     DbRowData rowdata = data_list.value(row);
@@ -207,6 +197,7 @@ bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int
     }
     data_list.replace(row, rowdata);
 
+//    Добавление в отдельном потоке
     QThread* thread = new QThread();
     DBAccessor* db = new DBAccessor();
     db->prepareRow(&data_list.at(row));
@@ -224,8 +215,6 @@ bool SqlTableModel::setData(const QModelIndex &index, const QVariant &value, int
   return false;
 }
 
-
-
 rows_list SqlTableModel::getList()
 {
     return data_list;
@@ -233,8 +222,8 @@ rows_list SqlTableModel::getList()
 
 Qt::ItemFlags SqlTableModel::flags(const QModelIndex &index)const
 {
-    if(index.isValid())
-            return QAbstractTableModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+  if(index.isValid())
+    return QAbstractTableModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
-    return Qt::NoItemFlags;
+  return Qt::NoItemFlags;
 }

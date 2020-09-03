@@ -44,7 +44,6 @@ public:
   void updateData();
 public slots:
   void appendNewRow(int id);
-  void slotSetData(rows_list dl);
   void slotRemoveById(int id);
 private:
   rows_list data_list;

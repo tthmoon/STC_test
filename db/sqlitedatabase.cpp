@@ -1,13 +1,8 @@
-#include <QDebug>
-#include <QDir>
-
-#include <QSqlError>
-#include <QSqlQuery>
-
 #include "sqlitedatabase.h"
 
 const QString CLASS_ID = "QSQLITE";
 
+//Инициализация Параметров базы
 SQLiteDataBase::SQLiteDataBase(
   const QString& database_directory_path,
   const QString& database_file_name,
@@ -25,6 +20,7 @@ SQLiteDataBase::~SQLiteDataBase()
   QSqlDatabase::removeDatabase(connection_name_);
 }
 
+//Подключение к базе
 void SQLiteDataBase::connect()
 {
   if (file_name_.isEmpty()){
@@ -57,7 +53,6 @@ void SQLiteDataBase::connect()
 
   QString db_file_path(dir.path() + QDir::separator() + file_name_);
   QSqlDatabase db = QSqlDatabase::addDatabase(CLASS_ID, connection_name_);
-//  qDebug() << db_file_path;
   db.setDatabaseName(db_file_path);
   if (!db.open()) {
     QString err_msg;
@@ -75,6 +70,7 @@ QSqlDatabase SQLiteDataBase::getDataBase()
   return QSqlDatabase::database(connection_name_, true);
 }
 
+//Создание таблицы
 void SQLiteDataBase::createTable(
   const QString& table_name,
   const QString& table_structure

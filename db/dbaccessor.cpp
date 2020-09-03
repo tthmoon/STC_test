@@ -1,7 +1,9 @@
 #include "dbaccessor.h"
 
+//Класс для работы с данными базы данных
 DBAccessor::DBAccessor()
 {
+//  Каждый раз создание новое соедниние с новым индификтором
   sql_ = new SQLiteDataBase(QDir::currentPath(), QString("test.sql"), randString(16));
   sql_->connect();
   query_ = new QSqlQuery(sql_->getDataBase());
@@ -9,18 +11,23 @@ DBAccessor::DBAccessor()
 
 DBAccessor::~DBAccessor()
 {
+  delete sql_;
   delete query_;
+  if (row_ != Q_NULLPTR)
+     delete row_;
 }
 
+//Установка ИД строки, необходимо в случае работы в отдельном потоке
 void DBAccessor::prepareRowId(int id){
-//  qDebug() << QString::number(id_);
   id_ = id;
 }
 
+//Установка строки, необходимо в случае работы в отдельном потоке
 void DBAccessor::prepareRow(const DbRowData* row){
   row_ = row;
 }
 
+//Выполнение запроса в базу, в случае ошибки пишет в вывод
 void DBAccessor::executeQuery(const QString& query_string)
 {
   clearQueryResult();
@@ -33,6 +40,7 @@ void DBAccessor::executeQuery(const QString& query_string)
   }
 }
 
+//Проверка на чтение следующей строки
 bool DBAccessor::canReadNextResultRow()
 {
   if (!query_->isActive()) {
@@ -46,18 +54,20 @@ bool DBAccessor::canReadNextResultRow()
   return query_->next();
 }
 
+//Чтение результата запроса как строки
 QString DBAccessor::resultAsString(int index)
 {
   return query_->value(index).toString();
 }
 
+//Очистка буфера запроса
 void DBAccessor::clearQueryResult()
 {
   query_->finish();
   query_->clear();
 }
 
-
+//Запрос на получение всех записей в таблице
 rows_list DBAccessor::requestForAll(
 )
 {
@@ -77,6 +87,7 @@ rows_list DBAccessor::requestForAll(
   return data_set;
 }
 
+//Рандомизатор случайно строки заданного размера
 QString DBAccessor::randString(int len)
 {
     QString str;
@@ -87,12 +98,15 @@ QString DBAccessor::randString(int len)
     return str;
 }
 
+//Удаление строки, возвращает id удаленной строки сигналом. Нужно для работы в отдельном потоке
 void DBAccessor::removeByID()
 {
   executeQuery(QString("DELETE FROM testtbkl WHERE id='%1'").arg(QString::number(id_)));
   emit signal_removeByID(id_);
 }
 
+//Установка данных в таблицу, требует подготовленной строки в методе void DBAccessor::prepareRow(const DbRowData* row), сигналом сообщает о готовности.
+//Нужно для работы в отдельном потоке
 void DBAccessor::updateRow()
 {
   executeQuery(QString("UPDATE testtbkl "
@@ -110,6 +124,8 @@ void DBAccessor::updateRow()
   emit signal_updateRow();
 }
 
+//Добавление новой строки в таблицы, в результате возвращает сигналом id  строки
+//Нужно для работы в отдельном потоке
 void DBAccessor::addNewStatement()
 {
   executeQuery(QString("INSERT INTO testtbkl "
@@ -124,6 +140,7 @@ void DBAccessor::addNewStatement()
   emit signal_addNewStatement(id);
 }
 
+//Добавление новой строки в таблицы, в результате возвращает id  строки
 int DBAccessor::addNewStatement(DbRowData* data)
 {
   executeQuery(QString("INSERT INTO testtbkl "

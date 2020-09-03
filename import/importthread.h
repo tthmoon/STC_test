@@ -7,7 +7,6 @@
 #include <QDir>
 #include "../xml/xmlreader.h"
 #include "../db/dbaccessor.h"
-#include "../db/sqltablemodel.h"
 
 class ImportThread : public QThread
 {

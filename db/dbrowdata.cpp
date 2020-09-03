@@ -6,6 +6,8 @@ DbRowData::DbRowData(const int id):
   id_{id}
 {}
 
+//Класс, Описывающий строку в таблице
+
 DbRowData::DbRowData(
   const int id,
   const QString& texteditor,

@@ -9,8 +9,7 @@
 #include <QThread>
 
 #include "sqlitedatabase.h"
-#include "../dbrowdata.h"
-//#include "sqltablemodel.h"
+#include "../db/dbrowdata.h"
 using rows_list = QList<DbRowData>;
 
 class DBAccessor : public QObject
@@ -26,10 +25,7 @@ public:
 
   DBAccessor();
   ~DBAccessor();
-//  int addNewStatement();
   QString randString(int len);
-//  void removeByID(int id);
-//  void updateRow(const DbRowData* data);
   rows_list requestForAll();
 
   void prepareRowId(int id);
@@ -40,12 +36,11 @@ public slots:
   void updateRow();
   void removeByID();
 private:
-//  rows_list& data_list_ ;
   QSqlDatabase db_ ;
-  SQLiteDataBase* sql_;
+  SQLiteDataBase* sql_ = Q_NULLPTR;
   QSqlQuery* query_ = Q_NULLPTR;
   int id_;
-  const DbRowData* row_;
+  const DbRowData* row_ = Q_NULLPTR;
   void clearQueryResult();
   void executeQuery(const QString &query_string);
   bool canReadNextResultRow();

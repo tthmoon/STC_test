@@ -5,6 +5,11 @@ namespace Db {
   class SQLiteDataBase;
 }
 
+#include <QDebug>
+#include <QDir>
+
+#include <QSqlError>
+#include <QSqlQuery>
 #include <QString>
 #include <QSqlDatabase>
 

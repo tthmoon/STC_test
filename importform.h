@@ -25,7 +25,6 @@ public:
 
   void closeEvent(QCloseEvent *event);
   void startImporting(QString dir);
-//  void addNewStatement(QMap<QString, QString>);
 
 public slots:
   void slotImportStart(QStringList file_names);
